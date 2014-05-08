@@ -1,31 +1,20 @@
-package com.willcanine.TelleKinesis;
-
-import android.os.Bundle;
-import android.app.Activity;
-import android.content.Context;
+package com.example.tellekinesis;
 
 import org.json.JSONObject;
 
-import com.willcanine.TelleKinesis.R;
+import io.socket.*;
 
-import io.socket.IOAcknowledge;
-import io.socket.IOCallback;
-import io.socket.SocketIO;
-import io.socket.SocketIOException;
-
-
-import android.os.Vibrator;
-import android.util.Log;
-import android.widget.TextView;
-
+import android.app.Activity;
+import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.os.Bundle;
+import android.os.Vibrator;
+import android.util.Log;
 
 public class MainActivity extends Activity implements SensorEventListener {
-
-	TextView tv;
 	
 	SocketIO socket;
 	
@@ -36,15 +25,13 @@ public class MainActivity extends Activity implements SensorEventListener {
     SensorEventListener sensorListener;
     Sensor accelerometerSensor;
     
-    float SHAKE_THRESH  = 50;
+    float SHAKE_THRESH  = 8;
     
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-
-		tv = (TextView) this.findViewById(R.id.textView1);
 		
 		sensorManager = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
         accelerometerSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
@@ -100,7 +87,7 @@ public class MainActivity extends Activity implements SensorEventListener {
 			});
 			
 			//not in the callback, just when we start
-			socket.emit("vibrate", "android says hello");
+			socket.emit("message", "android says hello");
 			
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -154,12 +141,12 @@ public void onSensorChanged(SensorEvent event) {
     		float[] accelVals = event.values;
     		float averageVals = 0;
     		
-    		for (int i = 0; i <= accelVals.length; i++){
+    		for (int i = 0; i < accelVals.length; i++){
     			averageVals = accelVals[i] + averageVals;
     		}
     		averageVals = averageVals/accelVals.length;
     		
-    		if (averageVals > SHAKE_THRESH){
+    		if (accelVals[0] > SHAKE_THRESH){
     			socket.emit("vibrate", "shake");
     		} else if(averageVals <= SHAKE_THRESH){
     			socket.emit("vibrate", "NOShake");
@@ -174,10 +161,3 @@ public void onAccuracyChanged(Sensor sensor, int accuracy) {
 }
 
 }
-
-
-
-
-
-
-
